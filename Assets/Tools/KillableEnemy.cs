@@ -1,9 +1,11 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Script that is attached to any enemy or object that can be killed.
+/// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class KillableEnemy : MonoBehaviour
 {
@@ -15,10 +17,13 @@ public class KillableEnemy : MonoBehaviour
     
     private float levelCoef = 1.0f;
 
+    [Header("Default death animation defined in this script")]
     [SerializeField]
-    private bool DeafultDeath = false;
+    private bool DeafultDeath;
+    [Header("When damage is done instantly dies")]
     [SerializeField]
-    private bool OneShotEnemy = false;
+    private bool OneShotEnemy;
+
 
     private SpriteRenderer sprite;
 
@@ -50,7 +55,7 @@ public class KillableEnemy : MonoBehaviour
         
     }
     
-    private void HealthSystem_OnHealthChanged(object sender, System.EventArgs e)
+    private void HealthSystem_OnHealthChanged(object sender, EventArgs e)
     {
         if (healthSystem.Health == 0 || OneShotEnemy)
         {            

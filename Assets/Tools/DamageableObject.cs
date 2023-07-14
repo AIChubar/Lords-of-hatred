@@ -1,13 +1,14 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
-//I keep all the logic about receiving damage here
+/// <summary>
+/// Script that is attached to any enemy or object that can do damage.
+/// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class DamageableObject : MonoBehaviour
 {
+    [Tooltip("Base object damage")]
+    [SerializeField]
     public float damage;
     
     private float levelCoef = 1.0f;

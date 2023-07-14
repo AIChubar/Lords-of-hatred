@@ -1,21 +1,31 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
-using DefaultNamespace;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
-public class Boss2Behaviour : MonoBehaviour
+/// <summary>
+/// Script containing behaviour of the second level boss.
+/// </summary>
+public class Boss2Behaviour : Boss
 {
-    public Transform[] wayPoints;
+    [Header("List of waypoints boss moving between before transition")]
+    [SerializeField]
+    private Transform[] RightWayPoints;
     
-    public Transform[] leftWayPoints;
+    [Header("List of waypoints boss moving between after transition")]
+    [SerializeField]
+    private Transform[] LeftWayPoints;
     
-    public Transform startingWayPoint;
+    [Header("Starting waypoint")]
+    [SerializeField]
+    private Transform StartingWayPoint;
     
-    public Transform startingWayPointLeft;
+    [Header("Starting waypoint after transition")]
+    [SerializeField]
+    private Transform StartingWayPointLeft;
     
-    public float moveSpeed;
+    [Header("Boss movement speed")]
+    [SerializeField]
+    private float MoveSpeed;
 
     private int nextWayPoint;
 
@@ -29,40 +39,40 @@ public class Boss2Behaviour : MonoBehaviour
     
     private AnimationClip disappearClip;
 
-    Animator animator;
+    private Animator animator;
 
     private bool transitioning = false;
     
-    private float levelCoef = 1.0f;
-    
-    private SpriteRenderer sprite;
 
-    public SpriteRenderer transitionDiskSprite;
+    private Boss2Shooting shootingComponent;
     
-    private bool dying = false;
+    [Header("Sprite of the transition disk")]
+    [SerializeField]
+    private SpriteRenderer TransitionDiskSprite;
+    
+    [Dropdown("AudioManager.Instance.Sounds", "Name")]
+    public Sound SoundWalking;
+    
+    [Dropdown("AudioManager.Instance.Sounds", "Name")]
+    public Sound SoundShooting;
+    
+    [Dropdown("AudioManager.Instance.Sounds", "Name")]
+    public Sound SoundTransition;
     
     private bool transitioned = false;
-    // Start is called before the first frame update
-    void Awake()
+    protected override void Awake()
     {
+        base.Awake();
+        shootingComponent = transform.GetChild(0).GetComponent<Boss2Shooting>();
         animator = GetComponent<Animator>();
     }
 
-    private void Start()
+    protected override void Start()
     {
-        
-        levelCoef += GameManager.gameManager.Character.levelsProgression[1] / 12f;
-        if (levelCoef < 3)
-        {
-            moveSpeed *= levelCoef;
-        }
-        else
-        {
-            moveSpeed *= 3;
-        }
-        sprite = GetComponent<SpriteRenderer>();
-        GetComponent<KillableEnemy>().healthSystem.OnHealthChanged += HealthSystem_OnHealthChangedAnimation;
-        GameEvents.current.OnEnemyKilled += GameEvents_OnEnemyKilled;
+        base.Start();
+        MoveSpeed *= levelCoef;
+        GetComponent<KillableEnemy>().healthSystem.OnHealthChanged += HealthSystem_OnHealthChangedTransition;
+        AudioManager.instance.SetPitch(SoundWalking, levelCoef);
         AnimationClip[] clips = animator.runtimeAnimatorController.animationClips;
         for (int i = 0; i < clips.Length; i++)
         {
@@ -76,35 +86,35 @@ public class Boss2Behaviour : MonoBehaviour
             }
         }
 
-        transform.position = startingWayPoint.transform.position;
+        transform.position = StartingWayPoint.transform.position;
         nextWayPoint = 4;
+        
+        AudioManager.instance.Play(SoundWalking);
     }
 
-    // Update is called once per frame
     void FixedUpdate()
     {
         if (!attacking && !transitioning && !dying)
             Move();
     }
     
-    private void HealthSystem_OnHealthChangedAnimation(object sender, System.EventArgs e)
+    private void HealthSystem_OnHealthChangedTransition(object sender, System.EventArgs e)
     {
         HealthSystem hs = (HealthSystem)sender;
+        if (hs.Health <= 0)
+        {
+            animator.enabled = false;
+        }
         if (hs.Health < hs.HealthMax / 2 && hs.Health > 0 && !transitioned)
         {
             StartCoroutine(Transition(hs));
         }
-        StartCoroutine(DamageReceivedAnimation(0.4f));
+        
     }
 
-    private void GameEvents_OnEnemyKilled(KillableEnemy enemy)
-    {
-        StartCoroutine(DeathAnimation());
-    }
-    
     private void Move()
     {
-        if (transform.position == wayPoints[nextWayPoint].transform.position )
+        if (transform.position == RightWayPoints[nextWayPoint].transform.position )
         {
             attackCount++;
             animator.SetBool("Back", false);
@@ -117,7 +127,7 @@ public class Boss2Behaviour : MonoBehaviour
                 Attack();
                 return;
             }
-
+            
             int newWayPoint = Random.Range(0, 8);
             while (newWayPoint == nextWayPoint)
             {
@@ -125,8 +135,8 @@ public class Boss2Behaviour : MonoBehaviour
             }
             nextWayPoint = newWayPoint;
 
-            float angle = Mathf.Atan2(wayPoints[nextWayPoint].transform.position.y - transform.position.y ,
-                wayPoints[nextWayPoint].transform.position.x-transform.position.x) * 180 / Mathf.PI;
+            float angle = Mathf.Atan2(RightWayPoints[nextWayPoint].transform.position.y - transform.position.y ,
+                RightWayPoints[nextWayPoint].transform.position.x-transform.position.x) * 180 / Mathf.PI;
 
             if (angle <= 45 && angle >= -45)
             {
@@ -145,10 +155,14 @@ public class Boss2Behaviour : MonoBehaviour
                 animator.SetBool("Left", true);
             }
         }
-        
+
+        if (!AudioManager.instance.IsPlaying(SoundWalking))
+        {
+            AudioManager.instance.Play(SoundWalking);
+        }
         transform.position = Vector2.MoveTowards(transform.position,
-                wayPoints[nextWayPoint].transform.position,
-                moveSpeed * Time.deltaTime);
+            RightWayPoints[nextWayPoint].transform.position,
+                MoveSpeed * Time.deltaTime);
         
     }
 
@@ -161,37 +175,27 @@ public class Boss2Behaviour : MonoBehaviour
     
     private IEnumerator AttackAnimation(float duration, int attacks)
     {
+        AudioManager.instance.Stop(SoundWalking);
+
         attacking = true;
         for (int i = 0; i < attacks; i++)
         {
             animator.Play("Boss2Atk");
             yield return new WaitForSeconds(duration);
-            if (transitioning)
+            if (transitioning || dying)
                 break;
-            transform.GetChild(0).GetComponent<Boss2Shooting>().Shoot();
+            shootingComponent.Shoot();
+            AudioManager.instance.Play(SoundShooting);
         }
         attacking = false;
 
     }
     
-    private IEnumerator DamageReceivedAnimation(float duration)
-    {
-        for (float t = 0; t < 1; t += Time.deltaTime / duration * 8)
-        {
-            sprite.color = new Color(Mathf.SmoothStep(1, 0, t), Mathf.SmoothStep(1, 0, t), Mathf.SmoothStep(1, 0, t));
-            yield return null;
-        }
-        yield return new WaitForSeconds(duration * 3/4);
-        for (float t = 0; t < 1; t += Time.deltaTime / duration * 8)
-        {
-            sprite.color = new Color(Mathf.SmoothStep(0, 1, t), Mathf.SmoothStep(0, 1, t), Mathf.SmoothStep(0, 1, t));
-            yield return null;
-        }
-
-    }
 
     private IEnumerator Transition(HealthSystem hs)
     {
+        AudioManager.instance.Stop(SoundWalking);
+        AudioManager.instance.Stop(SoundShooting);
         transitioning = true;
         animator.enabled = false;
         animator.enabled = true;
@@ -200,21 +204,22 @@ public class Boss2Behaviour : MonoBehaviour
         animator.Play("Boss2Disappear");
         for (float t = 0; t < 1; t += Time.deltaTime / disappearClip.length)
         {
-            transitionDiskSprite.color = new Color(1, 1, 1, Mathf.SmoothStep(0, 1, t));
+            TransitionDiskSprite.color = new Color(1, 1, 1, Mathf.SmoothStep(0, 1, t));
             yield return null;
         }
         
         sprite.color  = new Color(1, 1, 1, 0);
 
-        while (transform.position != startingWayPointLeft.transform.position)
+        AudioManager.instance.Play(SoundTransition);
+        while (transform.position != StartingWayPointLeft.transform.position)
         {
             transform.position = Vector2.MoveTowards(transform.position,
-                startingWayPointLeft.transform.position,
+                StartingWayPointLeft.transform.position,
                 10 * Time.deltaTime);
             yield return null;
         }
-        
-        transitionDiskSprite.color = new Color(1, 1, 1, 0);
+        AudioManager.instance.Stop(SoundTransition);
+        TransitionDiskSprite.color = new Color(1, 1, 1, 0);
         animator.Play("Boss2Idle");
         sprite.color  = new Color(1, 1, 1, 1);
         
@@ -223,29 +228,13 @@ public class Boss2Behaviour : MonoBehaviour
         hs.Heal(hs.HealthMax);
         gameObject.GetComponent<Collider2D>().enabled = true;
 
-        wayPoints = leftWayPoints;
+        RightWayPoints = LeftWayPoints;
         animator.enabled = false;
         animator.enabled = true;
         transitioning = false;
         transitioned = true;
         
-        
+        AudioManager.instance.Play(SoundWalking);
     }
-
-    private IEnumerator DeathAnimation()
-    {
-        dying = true;
-        gameObject.GetComponent<Collider2D>().enabled = false;
-        animator.Play("Boss2Disappear");
-        
-        for (float t = 0; t < 1; t += Time.deltaTime / disappearClip.length)
-        {
-            sprite.color = new Color(1, 1, 1, Mathf.SmoothStep(1, 0, t));
-            yield return null;
-        }
-        GameObject.FindGameObjectWithTag("LevelDoor").GetComponent<DoorScript>().OpenDoor();
-        GetComponent<KillableEnemy>().healthSystem.OnHealthChanged -= HealthSystem_OnHealthChangedAnimation;
-        GameEvents.current.OnEnemyKilled -= GameEvents_OnEnemyKilled;
-        Destroy(this);
-    }
+    
 }

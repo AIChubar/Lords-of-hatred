@@ -1,8 +1,8 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
 
+/// <summary>
+/// Health system used for any actor with health.
+/// </summary>
 [Serializable]
 public class HealthSystem
 {
@@ -41,7 +41,7 @@ public class HealthSystem
 
     public HealthSystem(float healthMax)
     {
-        this.health = healthMax;
+        health = healthMax;
         this.healthMax = healthMax;
     }
     

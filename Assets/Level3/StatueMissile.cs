@@ -1,10 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Script for level three statue missile logic.
+/// </summary>
 public class StatueMissile : MonoBehaviour
 {
-
     private void Start()
     {
         Destroy(gameObject, 5f);

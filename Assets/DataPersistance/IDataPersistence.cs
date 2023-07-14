@@ -1,7 +1,6 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-
+/// <summary>
+/// Interface that should be applied for classes containing data that needs to be saved or loaded.
+/// </summary>
 public interface IDataPersistence
 {
     void LoadData(GameData data);

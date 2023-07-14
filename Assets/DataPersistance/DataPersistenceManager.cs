@@ -1,27 +1,27 @@
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using System.Linq;
 using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Script that manages saving and loading data.
+/// </summary>
 public class DataPersistenceManager : MonoBehaviour
 {
     [Header("File Storage Config")] 
-    [SerializeField] private string fileName;
+    [SerializeField] public string fileName;
     
     private GameData gameData;
 
     private List<IDataPersistence> dataPersistenceObjects;
 
-    private FileDataHandler dataHandler;
+    public FileDataHandler dataHandler;
     public static DataPersistenceManager instance { get; private set; }
 
-    private void Awake()
+    public void Awake()
     {
         if (instance != null)
         {
-            Debug.LogError("Found more than one Data Persistence Manager in the scene.");
             Destroy(gameObject);
             return;
         }
@@ -32,9 +32,11 @@ public class DataPersistenceManager : MonoBehaviour
 
     }
 
-    private void Start()
+    public FileDataHandler getNewDataHandler()
     {
-        
+        dataHandler = new FileDataHandler(Application.persistentDataPath, fileName);
+        dataPersistenceObjects = FindAllDataPersistenceObjects();
+        return dataHandler;
     }
 
     public void NewGame()
@@ -83,16 +85,12 @@ public class DataPersistenceManager : MonoBehaviour
 
     public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (scene.buildIndex == 0)
-            return;
         dataPersistenceObjects = FindAllDataPersistenceObjects();
         LoadGame();
     }
 
     public void OnSceneUnloaded(Scene scene)
     {
-        if (scene.buildIndex == 0)
-            return;
         SaveGame();
     }
 

@@ -1,42 +1,60 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Script for the enemy that is firing towards player if it is in the shooting range.
+/// </summary>
 public class AutoFiringEnemy : MonoBehaviour
 {
-    public GameObject MisslePrefab;
+    [Header("Missile game object prefab")]
+    [SerializeField]
+    private GameObject MisslePrefab;
+    
+    [Header("Enemy missile speed")]
+    [SerializeField]
+    private float MissileSpeed;
 
-    public Collider2D DetectionCollider;
+    [Header("Enemy shooting delay")]
+    [SerializeField]
+    private float ShootingDelay;
 
-    public GameObject InstantiatedObjectParent;
-
-    public float MissileSpeed;
-
-    public float ShootingDelay;
-
-    private float ShootingTimer = 0.0f;
+    private float shootingTimer = -0.5f;
 
     private bool colliding = false;
 
     private PlayerAnimation player;
 
-    // Start is called before the first frame update
+    [Header("Area on which a player is detected to trigger a shot")]
+    [SerializeField]
+    private Vector2 DetectionArea;
+    
+    private float levelCoef = 1.0f;
+
     void Start()
     {
-        
-    }
+        levelCoef += GameManager.gameManager.Character.levelsProgression[SceneManager.GetActiveScene().buildIndex - 2] / 12f;
+        if (levelCoef >= 2.5f)
+        {
+            levelCoef = 2.5f;
+        }
 
-    // Update is called once per frame
+        MissileSpeed *= levelCoef;
+        ShootingDelay /= levelCoef;
+        BoxCollider2D detectionCollider = gameObject.AddComponent<BoxCollider2D>();
+        detectionCollider.size = DetectionArea;
+        detectionCollider.isTrigger = true;
+    }
+    
     void Update()
     {
-        ShootingTimer += Time.deltaTime;
-        if (colliding && ShootingTimer > ShootingDelay)
+        shootingTimer += Time.deltaTime;
+        if (colliding && shootingTimer > ShootingDelay)
         {
             Shoot(player.transform.position);
         }
     }
     
-    private void OnCollisionEnter2D(Collision2D col)
+    private void OnTriggerEnter2D(Collider2D col)
     {
         if (col.gameObject.TryGetComponent<PlayerAnimation>(out PlayerAnimation player))
         {
@@ -45,7 +63,7 @@ public class AutoFiringEnemy : MonoBehaviour
         }
     }
     
-    private void OnCollisionExit2D(Collision2D col)
+    private void OnTriggerExit2D(Collider2D col)
     {
         if (col.gameObject.TryGetComponent<PlayerAnimation>(out PlayerAnimation player))
         {
@@ -55,14 +73,12 @@ public class AutoFiringEnemy : MonoBehaviour
 
     private void Shoot(Vector3 heroPosition)
     {
-        ShootingTimer = 0.0f;
+        shootingTimer = 0.0f;
         GameObject missile = Instantiate(MisslePrefab, transform.position, Quaternion.identity);
-        missile.transform.SetParent(InstantiatedObjectParent.transform);
-        missile.tag = "Missile";
-        Rigidbody2D rb = missile.GetComponent<Rigidbody2D>();
+        missile.transform.SetParent(GameObject.FindGameObjectWithTag("InstantiatedObjectsParent").transform);
         Vector3 direction = heroPosition - transform.position;
         Vector2 velocity = new Vector2(direction.x, direction.y).normalized * MissileSpeed;
-        StatueMissile missileComp = missile.GetComponent<StatueMissile>();
-        missileComp.SetVelocity(velocity);
+        missile.GetComponent<StatueMissile>().SetVelocity(velocity);;
     }
+    
 }

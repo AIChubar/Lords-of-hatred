@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 /// <summary>
 /// Base class for bosses.
@@ -9,19 +10,26 @@ using UnityEngine;
     public class Boss : MonoBehaviour
     {
         
-        protected bool dying = false;
+        protected bool dying;
         protected SpriteRenderer sprite;
+        protected float levelCoef = 1.0f;
+
 
         protected virtual void Awake()
         {
             sprite = GetComponent<SpriteRenderer>();
-
+            
         }
 
         protected virtual void Start()
         {
             GetComponent<KillableEnemy>().healthSystem.OnHealthChanged += HealthSystem_OnHealthChangedAnimation;
             GameEvents.current.OnEnemyKilled += GameEvents_OnEnemyKilled;
+            levelCoef += GameManager.gameManager.Character.levelsProgression[SceneManager.GetActiveScene().buildIndex - 2] / 12f;
+            if (levelCoef >= 2.5f)
+            {
+                levelCoef = 2.5f;
+            }
 
         }
 
@@ -48,7 +56,7 @@ using UnityEngine;
             Destroy(gameObject);
         }
         
-        protected void HealthSystem_OnHealthChangedAnimation(object sender, System.EventArgs e)
+        protected void HealthSystem_OnHealthChangedAnimation(object sender, EventArgs e)
         {
             StartCoroutine(DamageReceivedAnimation(0.4f));
         }

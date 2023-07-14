@@ -9,7 +9,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 13b75c95f34a00d4e8c04f76b73312e6, type: 3}
+  m_Script: {fileID: 11500000, guid: c5c0d5ba38c622f459a639b5bc270c7a, type: 3}
   m_Name: Statue
   m_EditorClassIdentifier: 
   m_AnimatedSprites:
@@ -21,8 +21,9 @@ MonoBehaviour:
   - {fileID: -768553379, guid: 9694a9a93e8f0e5468e61362b4baa3db, type: 3}
   - {fileID: -2082675250, guid: 9694a9a93e8f0e5468e61362b4baa3db, type: 3}
   - {fileID: -1469771921, guid: 9694a9a93e8f0e5468e61362b4baa3db, type: 3}
-  m_MinSpeed: 4
-  m_MaxSpeed: 8
+  m_MinSpeed: 2
+  m_MaxSpeed: 4
   m_AnimationStartTime: 0
   m_AnimationStartFrame: 0
   m_TileColliderType: 1
+  GameObjectPrefab: {fileID: 7435414843557414445, guid: 8910bd88c0430404ead9e191dcbb31c9, type: 3}

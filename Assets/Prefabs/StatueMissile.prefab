@@ -15,6 +15,7 @@ GameObject:
   - component: {fileID: 2779371017652127798}
   - component: {fileID: -8563420913231518220}
   - component: {fileID: 500844488753839953}
+  - component: {fileID: -3362256386928992059}
   m_Layer: 3
   m_Name: StatueMissile
   m_TagString: Untagged
@@ -173,3 +174,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 02f3e45b718685d4aacaa1d3a57e7d82, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &-3362256386928992059
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8399948838503137147}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 10e179517ca68d046905ea8e7cf020c8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MaxHealth: 1
+  Regen: 0
+  DeafultDeath: 1
+  OneShotEnemy: 1

@@ -1,12 +1,18 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Script Containing logic for bees on the first level.
+/// </summary>
 public class BeesMovement : MonoBehaviour
 {
-    public float moveSpeed = 3f;
+    [Header("Bees basic movement speed")]
+    [SerializeField]
+    private float moveSpeed = 2f;
 
-    public Rigidbody2D rb;
+    [Header("Bees rigid body")]
+    [SerializeField]
+    private Rigidbody2D rb;
 
     private Vector2 movement;
 
@@ -17,12 +23,11 @@ public class BeesMovement : MonoBehaviour
     void Start()
     {
         DefaultPos = transform.position;
-        levelCoef += GameManager.gameManager.Character.levelsProgression[0] / 10f;
-        if (levelCoef >= 3)
-            levelCoef = 3;
+        levelCoef += GameManager.gameManager.Character.levelsProgression[SceneManager.GetActiveScene().buildIndex - 2] / 12f;
+        if (levelCoef >= 2.5f)
+            levelCoef = 2.5f;
         moveSpeed *= levelCoef;
     }
-    // Update is called once per frame
     void Update()
     {
         movement.y = 1.0f;

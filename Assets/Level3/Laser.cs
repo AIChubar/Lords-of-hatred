@@ -1,6 +1,8 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+/// <summary>
+/// Script containing behaviour of the boss 3 laser.
+/// </summary>
 [RequireComponent(typeof(LineRenderer))]
 public class Laser : MonoBehaviour
 {
@@ -14,21 +16,33 @@ public class Laser : MonoBehaviour
 
     private bool laserPreparing = true;
     
-    public float AnglePerSecond;
+    [Header("Speed of rotation in degrees per second")]
+    [SerializeField]
+    private float AnglePerSecond;
     
     private PolygonCollider2D polygonCollider2D;
 
     private Vector2 distantLaserPoint; // used for ray always hitting the wall
-    
+
     private float levelCoef = 1.0f;
+    
+    [Dropdown("AudioManager.Instance.Sounds", "Name")]
+    [SerializeField]
+    private Sound SoundCharging;
+
+    [Dropdown("AudioManager.Instance.Sounds", "Name")]
+    [SerializeField]
+    private Sound SoundLaser;
     // Start is called before the first frame update
     void Start()
     {
-        levelCoef += GameManager.gameManager.Character.levelsProgression[1] / 12f;
+        levelCoef += GameManager.gameManager.Character.levelsProgression[2] / 12f;
         if (levelCoef > 2.5f)
         {
             levelCoef *= 2.5f;
         }
+
+        AnglePerSecond *= levelCoef;
         polygonCollider2D = GetComponent<PolygonCollider2D>();
         distantLaserPoint = new Vector2(50f, 0f);
         lineRenderer = GetComponent<LineRenderer>();
@@ -54,7 +68,7 @@ public class Laser : MonoBehaviour
     public void EnableLaser()
     {
         lineRenderer.enabled = true;
-        StartCoroutine(LaserPreparation(2f));
+        StartCoroutine(LaserPreparation(3f));
     }
 
     private void UpdateLaser()
@@ -89,9 +103,10 @@ public class Laser : MonoBehaviour
         }
     }
 
-    public void DisableLaser()
-    {
+    public void DisableLaser() {
         lineRenderer.enabled = false;
+        AudioManager.instance.Stop(SoundCharging);
+        AudioManager.instance.Stop(SoundLaser);
     }
     public Vector3[] GetPositions() {
         Vector3[] positions = new Vector3[lineRenderer.positionCount];
@@ -105,12 +120,13 @@ public class Laser : MonoBehaviour
 
     private IEnumerator LaserPreparation(float duration)
     {
+        AudioManager.instance.Play(SoundCharging);
         laserPreparing = true;
         polygonCollider2D.enabled = false;
         lineRenderer.startColor = new Color(0f,0f,0f,0.4f);
         lineRenderer.endColor = new Color(0f,0f,0f,0.4f);
         
-        for (float t = 0; t < 1; t += Time.deltaTime / duration)
+        for (float t = 0; t < 1; t += Time.deltaTime / (duration/2))
         {
             Vector3 gameObjectPos = gameObject.transform.position;
             distantLaserPoint = (player.transform.position - gameObjectPos).normalized * 50f;
@@ -123,7 +139,7 @@ public class Laser : MonoBehaviour
             yield return null;
         }
         
-        for (float t = 0; t < 1; t += Time.deltaTime / duration)
+        for (float t = 0; t < 1; t += Time.deltaTime / (duration/2))
         {
             lineRenderer.startColor = new Color(Mathf.SmoothStep(0, 1, t),Mathf.SmoothStep(0, 1, t),Mathf.SmoothStep(0, 1, t),Mathf.SmoothStep(0.4f, 1, t));
             lineRenderer.endColor = new Color(Mathf.SmoothStep(0, 1, t),Mathf.SmoothStep(0, 1, t),Mathf.SmoothStep(0, 1, t),Mathf.SmoothStep(0.4f, 1, t));
@@ -132,6 +148,7 @@ public class Laser : MonoBehaviour
         
         polygonCollider2D.enabled = true;
         laserPreparing = false;
-    
+        AudioManager.instance.Play(SoundLaser);
+
     }
 }

@@ -1,11 +1,11 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Manager that contains global events.
+/// </summary>
 public class GameEvents : MonoBehaviour
 {
-
     public static GameEvents current;
 
     private void Awake()

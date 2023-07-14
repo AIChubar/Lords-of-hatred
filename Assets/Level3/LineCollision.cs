@@ -1,7 +1,10 @@
-using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 //https://www.youtube.com/watch?v=BfP0KyOxVWs
+
+/// <summary>
+/// Script responsible for generating collision shape for a thick line. 
+/// </summary>
 [RequireComponent(typeof(Laser),typeof(PolygonCollider2D))]
 public class LineCollision : MonoBehaviour
 {
@@ -12,12 +15,11 @@ public class LineCollision : MonoBehaviour
     //The points to draw a collision shape between
     private List<Vector2> colliderPoints = new List<Vector2>(); 
 
-    void Start()
+    void Awake()
     {
         laser = GetComponent<Laser>();
         polygonCollider2D = GetComponent<PolygonCollider2D>();
     }
-
 
     void Update()
     {

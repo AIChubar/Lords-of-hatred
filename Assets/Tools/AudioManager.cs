@@ -26,7 +26,7 @@ public class AudioManager : MonoBehaviour
                 {
                     if (instance == null)
                     {
-                        instance = GameObject.FindObjectOfType(typeof(AudioManager)) as AudioManager;
+                        instance = FindObjectOfType(typeof(AudioManager)) as AudioManager;
                         if (instance == null)
                             Debug.LogError("SingletoneBase<T>: Could not found GameObject of type " + nameof(AudioManager));
                     }
@@ -56,6 +56,7 @@ public class AudioManager : MonoBehaviour
                 Sounds[i].Source.loop = Sounds[i].Loop;
             }
         }
+        
     }
 
     public void Play(string name)
@@ -74,4 +75,47 @@ public class AudioManager : MonoBehaviour
             return;
         s.Source.Play();
     }
+    
+    public void Stop(Sound name)
+    {
+        Sound s = Array.Find(Sounds.ToArray(), sound => sound.Name == name.Name);
+        if (s == null)
+            return;
+        s.Source.Stop();
+    }
+    
+    public void SetPitch(Sound name, float pitch)
+    {
+        Sound s = Array.Find(Sounds.ToArray(), sound => sound.Name == name.Name);
+        if (s == null)
+            return;
+        s.Source.pitch = pitch;
+    }
+    
+    public bool IsPlaying(Sound name)
+    {
+        Sound s = Array.Find(Sounds.ToArray(), sound => sound.Name == name.Name);
+        if (s == null)
+            return false;
+        return s.Source.isPlaying;
+    }
+
+    public void PauseSounds(bool isPause)
+    {
+        if (isPause)
+        {
+            foreach (Sound s in Sounds)
+            {
+                s.Source.Pause();
+            }
+        }
+        else
+        {
+            foreach (Sound s in Sounds)
+            {
+                s.Source.UnPause();
+            }
+        }
+    }
+    
 }

@@ -1,27 +1,20 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using UnityEngine;
 
+/// <summary>
+/// Script for level two boss missile logic.
+/// </summary>
 public class Boss2Missile : MonoBehaviour
 {
     private float MissileSpeed;
 
     private void Start()
     {
-        Destroy(gameObject, 4f);
-
+        Destroy(gameObject, 5f);
     }
 
     private void OnCollisionEnter2D(Collision2D col)
     {
-        if (col.gameObject.TryGetComponent<Boss2Behaviour>(out Boss2Behaviour Boss) ||
-            col.gameObject.TryGetComponent<Boss2Missile>(out Boss2Missile Missile))
-        {
-            Physics2D.IgnoreCollision(col.gameObject.GetComponent<Collider2D>(), gameObject.GetComponent<Collider2D>());
-        }
-        else if (!col.gameObject.TryGetComponent<MissileObject>(out MissileObject missile))
+        if (!col.gameObject.TryGetComponent<MissileObject>(out MissileObject missile))
         {
             Destroy(gameObject);
         }

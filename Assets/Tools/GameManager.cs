@@ -1,9 +1,9 @@
-using System.Collections;
-using System.Collections.Generic;
 using Cinemachine;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
+/// <summary>
+/// Main manager containing frequently needed game objects.
+/// </summary>
 public class GameManager : MonoBehaviour
 {
     public PlayerStats Character;
@@ -25,13 +25,5 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    private void OnEnable()
-    {
-        SceneManager.sceneLoaded += OnSceneLoaded;
-    }
-
-    public void OnSceneLoaded(Scene scene, LoadSceneMode mode)
-    {
-        
-    }
+    
 }

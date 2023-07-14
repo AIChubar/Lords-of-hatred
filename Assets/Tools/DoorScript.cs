@@ -1,13 +1,18 @@
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Script attached to a door object. Can be called when the door should be opened.
+/// </summary>
 public class DoorScript : MonoBehaviour
 {
-    public SpriteMask mask;
-    public Collider2D col;
+    [Header("Transparent sprite mask")]
+    [SerializeField]
+    private SpriteMask mask;
+    [Header("Door collider")]
+    [SerializeField]
+    private Collider2D col;
     
-    // Start is called before the first frame update
     void Start()
     {
         col.enabled = false;
@@ -21,7 +26,6 @@ public class DoorScript : MonoBehaviour
     private IEnumerator DoorOpening()
     {
         col.enabled = false;
-        float initX = mask.transform.position.x;
         for (float t = 0; t < 1; t += Time.deltaTime / 2)
         {
             mask.transform.Translate(Time.deltaTime / 2, 0, 0);

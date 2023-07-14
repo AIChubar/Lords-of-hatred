@@ -5,15 +5,21 @@ TagManager:
   serializedVersion: 2
   tags:
   - Missile
+  - DestroyInMenu
+  - LevelDoor
+  - ParticleSystem
+  - DestructableTileMap
+  - InstantiatedObjectsParent
+  - LaserHitObject
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Enemy
   - Water
   - UI
-  - 
-  - 
+  - Player
+  - Obstacle
   - 
   - 
   - 
@@ -41,4 +47,10 @@ TagManager:
   m_SortingLayers:
   - name: Default
     uniqueID: 0
+    locked: 0
+  - name: Particles
+    uniqueID: 3667361423
+    locked: 0
+  - name: Interface
+    uniqueID: 1131819899
     locked: 0

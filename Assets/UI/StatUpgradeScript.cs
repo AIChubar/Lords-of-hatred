@@ -1,9 +1,10 @@
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Script in which controls for stat upgrades are defined.
+/// </summary>
 public class StatUpgradeScript : MonoBehaviour
 {
     [SerializeField] private Button HealthButton;
@@ -31,6 +32,8 @@ public class StatUpgradeScript : MonoBehaviour
     [SerializeField] private TextMeshProUGUI AvailablePoints;
 
 
+    [Dropdown("AudioManager.Instance.Sounds", "Name")]
+    public Sound ButtonClick;
     // Start is called before the first frame update
     void Start()
     {
@@ -43,14 +46,10 @@ public class StatUpgradeScript : MonoBehaviour
         CheckPoints();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
 
     public void UpgradeHealth()
     {
+        AudioManager.instance.Play(ButtonClick);
         playerStats.statLevels.MaxHealth += 1;
         int num;
         int.TryParse(HealthLevel.text, out num);
@@ -61,6 +60,7 @@ public class StatUpgradeScript : MonoBehaviour
 
     public void UpgradeDamage()
     {
+        AudioManager.instance.Play(ButtonClick);
         playerStats.statLevels.Damage += 1;
         int num;
         int.TryParse(DamageLevel.text, out num);
@@ -71,6 +71,7 @@ public class StatUpgradeScript : MonoBehaviour
     
     public void UpgradeMovementSpeed()
     {
+        AudioManager.instance.Play(ButtonClick);
         playerStats.statLevels.MovementSpeed += 1;
         int num;
         int.TryParse(MovementLevel.text, out num);
@@ -81,6 +82,7 @@ public class StatUpgradeScript : MonoBehaviour
 
     public void UpgradeShootingDelay()
     {
+        AudioManager.instance.Play(ButtonClick);
         playerStats.statLevels.ShootingDelay += 1;
         int num;
         int.TryParse(ShootingDelayLevel.text, out num);
@@ -91,6 +93,7 @@ public class StatUpgradeScript : MonoBehaviour
 
     public void UpgradeMissileSpeed()
     {
+        AudioManager.instance.Play(ButtonClick);
         playerStats.statLevels.MissileSpeed += 1;
         int num;
         int.TryParse(MissileSpeedLevel.text, out num);
@@ -101,6 +104,7 @@ public class StatUpgradeScript : MonoBehaviour
 
     public void ResetPoints()
     {
+        AudioManager.instance.Play(ButtonClick);
         int returnedPoints = playerStats.statLevels.Damage*3 + playerStats.statLevels.MaxHealth*3 +
                      playerStats.statLevels.MissileSpeed*5 + playerStats.statLevels.MovementSpeed*5 + playerStats.statLevels.ShootingDelay*5;
         playerStats.statLevels = new StatLevels();

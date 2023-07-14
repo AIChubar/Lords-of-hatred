@@ -1,83 +1,106 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.Tilemaps;
+using UnityEngine.SceneManagement;
 using Random = UnityEngine.Random;
 
-//Unused
-public class AutoFiringTileMapScript : MonoBehaviour
+/// <summary>
+/// Script for spawning game objects at given positions without intersecting with other objects.
+/// </summary>
+public class FixedPositionSpawner : MonoBehaviour
 {
-    public GameObject GameObjectPrefab;
-
-    public SpawningTile Tile;
+    [Header("Top left point of spawning area")]
+    [SerializeField]
+    private Transform TopLeft;
     
-    private Tilemap SpawningArea;
-
-    public float SpawnInterval;
-
-    private float SpawnTimer = 0.0f;
-
-    private GameObject Player;
-
-    public float InitialSpawnedNumber;
+    [Header("Bottom right point of spawning area")]
+    [SerializeField]
+    private Transform BottomRight;
     
-    private List<GameObject> SpawnedObjects = new List<GameObject>();
+    [Header("Spawned game object")]
+    [SerializeField]
+    private GameObject GameObjectPrefab;
+    
+    [Header("Interval at each objects are spawned")]
+    [SerializeField]
+    private float SpawnInterval;
 
-    // Start is called before the first frame update
+    private float spawnTimer = 0.0f;
+
+    private GameObject player;
+
+    [Header("Initial number of spawned objects")]
+    [SerializeField]
+    private float InitialSpawnedNumber;
+
+    private GameObject parent;
+    
+    
+    private float levelCoef = 1.0f;
+
     private void Awake()
     {
-        SpawningArea = GetComponent<Tilemap>();
-        Player = GameObject.FindGameObjectWithTag("Player");
+        player = GameObject.FindGameObjectWithTag("Player");
+        parent = GameObject.FindGameObjectWithTag("InstantiatedObjectsParent");
     }
 
     void Start()
     {
+        levelCoef += GameManager.gameManager.Character.levelsProgression[SceneManager.GetActiveScene().buildIndex - 2] / 12f;
+        if (levelCoef >= 2.5f)
+        {
+            levelCoef = 2.5f;
+        }
+        SpawnInterval /= levelCoef;
         for (int i = 0; i < InitialSpawnedNumber; i ++)
         {
             Spawn();
         }
     }
-
-    // Update is called once per frame
+    
     void Update()
     {
-        SpawnTimer += Time.deltaTime;
-        if (SpawnTimer >= SpawnInterval)
+        spawnTimer += Time.deltaTime;
+        if (spawnTimer >= SpawnInterval)
         {
-            int randomX = Random.Range(SpawningArea.cellBounds.xMin, SpawningArea.cellBounds.xMax);
-            int randomY = Random.Range(SpawningArea.cellBounds.yMin, SpawningArea.cellBounds.yMax);
-            while (SpawningArea.GetTile(new Vector3Int(randomX, randomY, 0)) is not null &&
-                   Vector2.Distance(new Vector2(0,0), new Vector2(randomX, randomY)) <= 6)
-            {
-                randomX = Random.Range(SpawningArea.cellBounds.xMin, SpawningArea.cellBounds.xMax);
-                randomY = Random.Range(SpawningArea.cellBounds.yMin, SpawningArea.cellBounds.yMax);
-            }
-
-            SpawnTimer = 0;
-            SpawningArea.SetTile(new Vector3Int(randomX, randomY, 0), Tile);
+            Spawn();
+            spawnTimer = 0;
         }
     }
 
     private void Spawn()
     {
-        Vector2 playerPos = Player.transform.position;
-        int randomX = Random.Range(SpawningArea.cellBounds.xMin, SpawningArea.cellBounds.xMax);
-        int randomY = Random.Range(SpawningArea.cellBounds.yMin, SpawningArea.cellBounds.yMax);
-        float distance = Vector2.Distance(playerPos, new Vector2(randomX, randomY));
-        while (SpawningArea.GetTile(new Vector3Int(randomX, randomY, 0)) is not null ||
-               distance <= 7)
+        Vector2 playerPos = player.transform.position;
+        float randomX = Random.Range((int)TopLeft.position.x, (int)BottomRight.position.x) + 0.5f;
+        float randomY = Random.Range((int)BottomRight.position.y, (int)TopLeft.position.y) + 0.5f;
+        float distanceFromPlayer = Vector2.Distance(playerPos, new Vector2(randomX, randomY));
+        float distanceFromBoss = Vector2.Distance(new Vector2(0, 0), new Vector2(randomX, randomY));
+        Collider2D Collision = Physics2D.OverlapCircle(new Vector2(randomX,randomY), 0.9f, LayerMask.GetMask("SpawnedObject"));
+        int attempts = 0;
+        while (distanceFromPlayer <= 6 || Collision || distanceFromBoss <= 4)
         {
-            randomX = Random.Range(SpawningArea.cellBounds.xMin, SpawningArea.cellBounds.xMax);
-            randomY = Random.Range(SpawningArea.cellBounds.yMin, SpawningArea.cellBounds.yMax);
-            distance = Vector2.Distance(playerPos, new Vector2(randomX, randomY));
+            attempts++;
+            if (attempts >= 50)
+                return;
+            randomX = Random.Range((int)TopLeft.position.x, (int)BottomRight.position.x) + 0.5f;
+            randomY = Random.Range((int)BottomRight.position.y, (int)TopLeft.position.y) + 0.5f;
+            distanceFromPlayer = Vector2.Distance(playerPos, new Vector2(randomX, randomY));
         }
-        Vector3 centerPosition = new Vector3(randomX + 0.5f, randomY + 0.5f, 0);
-        GameObject SpawnedObject = Instantiate(GameObjectPrefab, centerPosition, Quaternion.identity);
-        SpawnedObject.transform.SetParent(GameObject.FindGameObjectWithTag("InstantiatedObjectsParent").transform);
-        SpawnedObjects.Add(SpawnedObject);
-        SpawnTimer = 0;
-        SpawningArea.SetTile(new Vector3Int(randomX, randomY, 0), Tile);
+        Vector3 pos = new Vector3(randomX, randomY, 0);
+        GameObject SpawnedObject = Instantiate(GameObjectPrefab, pos, Quaternion.identity);
+        SpawnedObject.transform.SetParent(parent.transform);
+        StartCoroutine(Appear(1, SpawnedObject));
     }
     
+    private IEnumerator Appear(float tweeningDuration, GameObject ob)
+    {
+        ob.GetComponent<Collider2D>().enabled = false;
+        Vector3 objectScale = ob.transform.localScale;
+        for (float t = 0; t < 1; t += Time.deltaTime / tweeningDuration)
+        {
+            ob.transform.localScale = objectScale * Mathf.SmoothStep(0, 1, t);
+            yield return null;
+        }
+        yield return new WaitForSeconds(0.5f);
+        ob.GetComponent<Collider2D>().enabled = true;
+    }
 }

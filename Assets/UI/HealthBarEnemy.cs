@@ -1,14 +1,17 @@
 using System.Collections;
-using System.Collections.Generic;
-using System.Security.Cryptography;
 using UnityEngine;
 using UnityEngine.UI;
 
+/// <summary>
+/// Health Bar that can be attached to an enemy.
+/// </summary>
 public class HealthBarEnemy : MonoBehaviour
 {
-    public Slider slider;
+    private Slider slider;
 
-    public GameObject Enemy;
+    [Tooltip("Enemy which health is tracked by this health bar")]
+    [SerializeField]
+    private GameObject Enemy;
 
     private HealthSystem healthSystem;
 
@@ -17,6 +20,7 @@ public class HealthBarEnemy : MonoBehaviour
     void Start()
     {
         healthSystem = Enemy.GetComponent<KillableEnemy>().healthSystem;
+        slider = GetComponent<Slider>();
         SetMaxHealth(healthSystem.HealthMax);
         healthSystem.OnHealthChanged += HealthSystem_OnHealthChanged;
     }

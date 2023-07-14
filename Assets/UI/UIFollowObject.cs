@@ -1,19 +1,19 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 
+/// <summary>
+/// Script that should be attached to UI element which should follow some GameObject.
+/// </summary>
 public class UIFollowObject : MonoBehaviour
 {
-    public Transform objectToFollow;
+    [SerializeField]
+    private Transform objectToFollow;
 
     private RectTransform rectTransform;
-    // Start is called before the first frame update
     void Awake()
     {
         rectTransform = GetComponent<RectTransform>();
     }
 
-    // Update is called once per frame
     void Update()
     {
         if (objectToFollow != null)

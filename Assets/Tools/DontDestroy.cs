@@ -1,35 +1,28 @@
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.UIElements;
 
+/// <summary>
+/// Script for objects that should not be destroyed when the scene is switched.
+/// </summary>
 public class DontDestroy : MonoBehaviour
 {
     [HideInInspector]
     public string objectID;
     private void Awake()
     {
-        objectID = name + transform.position.ToString();
+        objectID = name + transform.position;
     }
-    // Start is called before the first frame update
     void Start()
     {
-        for (int i = 0; i < Object.FindObjectsOfType<DontDestroy>().Length; i++)
+        for (int i = 0; i < FindObjectsOfType<DontDestroy>().Length; i++)
         {
-            if (Object.FindObjectsOfType<DontDestroy>()[i] != this)
+            if (FindObjectsOfType<DontDestroy>()[i] != this)
             {
-                if (Object.FindObjectsOfType<DontDestroy>()[i].objectID == objectID)
+                if (FindObjectsOfType<DontDestroy>()[i].objectID == objectID)
                 {
                     Destroy(gameObject);
                 }
             }
         }
         DontDestroyOnLoad(gameObject);
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
     }
 }
