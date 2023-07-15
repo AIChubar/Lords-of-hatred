@@ -22,8 +22,36 @@ public class Pause : MonoBehaviour
 
     [Dropdown("AudioManager.Instance.Sounds", "Name")]
     public Sound ButtonClick;
+
+    [SerializeField] private GameObject UIButtons;
+    
+    private PlayerInput playerInput;
+
+    private void Awake()
+    {
+        playerInput = new PlayerInput();
+    }
+    
+    private void OnEnable()
+    {
+        playerInput.Enable();
+    }
+
+    private void OnDisable()
+    {
+        playerInput.Disable();
+    }
+    
     void Start()
     {
+        if (SystemInfo.deviceType == DeviceType.Desktop)
+        {
+            UIButtons.SetActive(false);
+        }
+        else
+        {
+            UIButtons.SetActive(true);
+        }
         pauseMode = PauseMode.UnPaused;
         PauseMenu.SetActive(false);
     }
@@ -32,22 +60,32 @@ public class Pause : MonoBehaviour
     {
         if (pauseMode == PauseMode.UnPaused)
         {
+            if (SystemInfo.deviceType == DeviceType.Handheld)
+            {
+                UIButtons.SetActive(true);
+            }
             UnSetPause();
         }
         else
         {
+            if (SystemInfo.deviceType == DeviceType.Handheld)
+            {
+                UIButtons.SetActive(false);
+            }
             SetPause(pauseMode);
         }
 
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if (playerInput.Player.Pause.triggered)
         {
             if (pauseMode == PauseMode.UnPaused)
             {
                 pauseMode = PauseMode.EscPause;
+                
             }
             else if (pauseMode == PauseMode.EscPause)
             {
                 pauseMode = PauseMode.UnPaused;
+                
             }
         }
     }

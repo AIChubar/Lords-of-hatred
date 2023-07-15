@@ -20,16 +20,37 @@ public class Shooting : MonoBehaviour
     public Transform CharTransform;
     
     private Camera mainCam;
-    private Vector3 mousPos;
+    private Vector3 pointerPos;
 
     private float missileSpeed;
 
     private float shootingTimer = 0.0f;
 
+    private float shootingReactionDelay = 0.2f;
+
+    private float rotZ;
+
     [Dropdown("AudioManager.Instance.Sounds", "Name")]
     public Sound SoundShooting;
     
     private GameObject instantiatedObjectsParent;
+    
+    private PlayerInput playerInput;
+
+    private void Awake()
+    {
+        playerInput = new PlayerInput();
+    }
+    
+    private void OnEnable()
+    {
+        playerInput.Enable();
+    }
+
+    private void OnDisable()
+    {
+        playerInput.Disable();
+    }
 
     private void Start()
     {
@@ -44,22 +65,48 @@ public class Shooting : MonoBehaviour
         {
             return;
         }
-        mousPos = mainCam.ScreenToWorldPoint(Input.mousePosition);
-        Vector3 rotation = mousPos - transform.position;
-        float rotZ = MathF.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
-        if (SceneManager.GetActiveScene().buildIndex == 2)
-            rotZ = 0f;
-        transform.rotation = Quaternion.Euler(0, 0, rotZ);
+
+        if (SystemInfo.deviceType == DeviceType.Desktop)
+        {
+            pointerPos = mainCam.ScreenToWorldPoint(playerInput.Player.OrbPos.ReadValue<Vector2>());
+            Vector3 rotation = pointerPos - transform.position;
+            rotZ = MathF.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
+            if (SceneManager.GetActiveScene().buildIndex == 2)
+                rotZ = 0f;
+        }
+        else
+        {
+            pointerPos = (Vector3)playerInput.Player.OrbPos.ReadValue<Vector2>() + CharTransform.position;
+        }
+        
         
         shootingTimer += Time.deltaTime;
-        if (Input.GetButton("Fire1"))
+        if (playerInput.Player.Shoot.IsPressed())
         {
-            if (shootingTimer >= GameManager.gameManager.Character.ShootingDelay.Value)
+            shootingReactionDelay -= Time.deltaTime;
+            if (shootingTimer >= GameManager.gameManager.Character.ShootingDelay.Value && (shootingReactionDelay < 0f || SystemInfo.deviceType == DeviceType.Desktop))
             {
                 Shoot();
                 shootingTimer = 0.0f;
             }
+
+            if (SystemInfo.deviceType == DeviceType.Handheld)
+            {
+                Vector3 rotation = pointerPos - transform.position;
+                rotZ = MathF.Atan2(rotation.y, rotation.x) * Mathf.Rad2Deg;
+                if (SceneManager.GetActiveScene().buildIndex == 2)
+                    rotZ = 0f;
+            }
         }
+
+        if (SystemInfo.deviceType == DeviceType.Handheld)
+        {
+            if (playerInput.Player.Shoot.WasReleasedThisFrame())
+            {
+                shootingReactionDelay = 0.2f;
+            }
+        }
+        transform.rotation = Quaternion.Euler(0, 0, rotZ);
         
     }
 

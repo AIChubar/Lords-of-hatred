@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,19 +28,36 @@ public class PlayerAnimation : MonoBehaviour
     [HideInInspector]
     public List<DamageableObject> collidingObjects;
 
+    //private CharacterController controller;
+
+    private PlayerInput playerInput;
+
+    private void Awake()
+    {
+        playerInput = new PlayerInput();
+    }
+
+    private void OnEnable()
+    {
+        playerInput.Enable();
+    }
+
+    private void OnDisable()
+    {
+        playerInput.Disable();
+    }
+
     // Start is called before the first frame update
     void Start()
     {
         rb = gameObject.GetComponent<Rigidbody2D>();
         sprite = GetComponent<SpriteRenderer>();
-
+        //controller = GetComponent<CharacterController>();
     }
 
     // Update is called once per frame
     void Update()
     {
-        
-        
         if (colliding && !damageAnimation)
         {
             if (!GameManager.gameManager.Character.healthSystem.Damage(collidingObjects[0].damage))
@@ -55,14 +73,16 @@ public class PlayerAnimation : MonoBehaviour
             StartCoroutine(DamageReceived(AnimationDuration));
             
         }
-
+        
     }
     
     private void FixedUpdate()
     {
+        movement = playerInput.Player.Move.ReadValue<Vector2>();
+        rb.MovePosition(rb.position + movement * (GameManager.gameManager.Character.MovementSpeed.Value * Time.fixedDeltaTime));
+
         movement.x = Input.GetAxisRaw("Horizontal");
         movement.y = Input.GetAxisRaw("Vertical");
-        rb.MovePosition(rb.position + movement * (GameManager.gameManager.Character.MovementSpeed.Value * Time.fixedDeltaTime));
     }
     
     private void OnTriggerEnter2D(Collider2D other)

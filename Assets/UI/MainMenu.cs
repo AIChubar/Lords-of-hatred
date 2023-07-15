@@ -17,12 +17,15 @@ public class MainMenu : MonoBehaviour
     
     [SerializeField] 
     private Slider volumeSlider;
+    
+    [SerializeField] 
+    private TMP_Dropdown dropDownResolution;
 
     [Header("Text on the button")] 
     [SerializeField] private TextMeshProUGUI continueText;
     
-    private List<int> widths = new List<int>() { 960, 1280, 1792, 1920, 1920 };
-    private List<int> heights = new List<int>() { 600, 720, 828, 960, 1080 };
+    private List<int> widths = new List<int>() { 960, 1280, 1792, 1920, 1920, 1080 };
+    private List<int> heights = new List<int>() { 600, 720, 828, 960, 1080, 2040 };
 
     private bool isFullScreen = true;
     
@@ -42,7 +45,20 @@ public class MainMenu : MonoBehaviour
             continueGameButton.interactable = false;
             continueText.color = new Color(1, 1, 1, 0.4f);
         }
-        SetResolution(3);
+
+        if (!PlayerPrefs.HasKey("ResIndex"))
+        {
+            if (SystemInfo.deviceType == DeviceType.Desktop)
+            {
+                PlayerPrefs.SetInt("ResIndex", 4);
+            }
+            else
+            {
+                PlayerPrefs.SetInt("ResIndex", 4);
+            }
+        }
+        SetResolution(PlayerPrefs.GetInt("ResIndex"));
+        dropDownResolution.value = PlayerPrefs.GetInt("ResIndex");
     }
     
     public void OnPlayGameClicked()
@@ -81,6 +97,7 @@ public class MainMenu : MonoBehaviour
 
     public void SetResolution(Int32 index)
     {
+        PlayerPrefs.SetInt("ResIndex", index);
         int width = widths[index];
         int height = heights[index];
         Screen.SetResolution(width, height, Screen.fullScreen);
