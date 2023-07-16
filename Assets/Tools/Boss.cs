@@ -65,8 +65,14 @@ using UnityEngine.SceneManagement;
         {
             if (gameObject != null && enemy.gameObject == gameObject)
             {
+                BeforeDeath();
                 StartCoroutine(DeathAnimation());
             }
+        }
+
+        protected virtual void BeforeDeath()
+        {
+            
         }
         
         private IEnumerator DamageReceivedAnimation(float duration)

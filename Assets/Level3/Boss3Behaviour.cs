@@ -70,8 +70,9 @@ public class Boss3Behaviour : Boss
         animator.Play("Boss3Sleeping");
     }
 
+    
 
-    private void OnDestroy()
+    protected override void BeforeDeath()
     {
         Destroy(BossLaser.gameObject);
     }
