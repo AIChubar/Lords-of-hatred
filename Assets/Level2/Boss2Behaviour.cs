@@ -173,6 +173,12 @@ public class Boss2Behaviour : Boss
         StartCoroutine(AttackAnimation(attackAnimationClip.length , 4));
     }
     
+    protected override void BeforeDeath()
+    {
+        AudioManager.instance.Stop(SoundWalking);
+        AudioManager.instance.Stop(SoundShooting);
+    }
+    
     private IEnumerator AttackAnimation(float duration, int attacks)
     {
         AudioManager.instance.Stop(SoundWalking);

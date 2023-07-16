@@ -14,6 +14,8 @@ using UnityEngine.SceneManagement;
         protected SpriteRenderer sprite;
         protected float levelCoef = 1.0f;
 
+        private bool damageAnimationPlaying = false;
+
 
         protected virtual void Awake()
         {
@@ -58,7 +60,8 @@ using UnityEngine.SceneManagement;
         
         protected void HealthSystem_OnHealthChangedAnimation(object sender, EventArgs e)
         {
-            StartCoroutine(DamageReceivedAnimation(0.4f));
+            if (!damageAnimationPlaying)
+                StartCoroutine(DamageReceivedAnimation(0.5f));
         }
 
         private void GameEvents_OnEnemyKilled(KillableEnemy enemy)
@@ -77,17 +80,19 @@ using UnityEngine.SceneManagement;
         
         private IEnumerator DamageReceivedAnimation(float duration)
         {
-            for (float t = 0; t < 1; t += Time.deltaTime / duration * 8)
+            damageAnimationPlaying = true;
+            for (float t = 0; t < 1; t += Time.deltaTime / duration * 4)
             {
-                sprite.color = new Color(Mathf.SmoothStep(1, 0, t), Mathf.SmoothStep(1, 0, t), Mathf.SmoothStep(1, 0, t));
+                sprite.color = new Color(Mathf.SmoothStep(1, 0.1f, t), Mathf.SmoothStep(1, 0.1f, t), Mathf.SmoothStep(1, 0.1f, t));
                 yield return null;
             }
-            yield return new WaitForSeconds(duration * 3/4);
-            for (float t = 0; t < 1; t += Time.deltaTime / duration * 8)
+            yield return new WaitForSeconds(duration * 1/2);
+            for (float t = 0; t < 1; t += Time.deltaTime / duration * 4)
             {
-                sprite.color = new Color(Mathf.SmoothStep(0, 1, t), Mathf.SmoothStep(0, 1, t), Mathf.SmoothStep(0, 1, t));
+                sprite.color = new Color(Mathf.SmoothStep(0.1f, 1, t), Mathf.SmoothStep(0.1f, 1, t), Mathf.SmoothStep(0.1f, 1, t));
                 yield return null;
             }
-
+            sprite.color = Color.white;
+            damageAnimationPlaying = false;
         }
     }
